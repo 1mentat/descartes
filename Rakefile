@@ -1,12 +1,26 @@
 require 'dotenv'
 Dotenv.load
 
+require 'yaml'
+
+def env
+    ENV['RACK_ENV'] || 'development'
+end
+
+def root
+    File.expand_path(File.dirname(__FILE__))
+end
+
+def config
+    config = YAML.load_file(File.join(root,'config','database.yml'))[env] rescue nil
+end
+
 namespace :db do
   require 'sequel'
 
   namespace :migrate do
     Sequel.extension :migration
-    DB = Sequel.connect(ENV['DATABASE_URL'] || 'postgres://localhost/descartes')
+    DB = Sequel.connect(ENV['DATABASE_URL'] || config || 'postgres://localhost/descartes')
 
     desc "Perform migration reset (full erase and migration up)"
     task :reset do

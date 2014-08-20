@@ -2,7 +2,21 @@ require 'sequel'
 require 'securerandom'
 require 'json'
 
-dsn = ENV['DATABASE_URL'] || 'postgres://localhost/descartes'
+require 'yaml'
+
+def env
+    ENV['RACK_ENV'] || 'development'
+end
+
+def root
+    File.expand_path(File.dirname(__FILE__))
+end
+
+def config
+    config = YAML.load_file(File.join(root,'config','database.yml'))[env] rescue nil
+end
+
+dsn = ENV['DATABASE_URL'] || config || 'postgres://localhost/descartes'
 
 DB = Sequel.connect(dsn)
 DB.extension :pagination
